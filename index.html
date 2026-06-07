@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude for E-Learning — Team Share</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 2rem 1rem; color: #1a1a18; }
+.deck { width: 100%; max-width: 740px; background: #ffffff; border-radius: 16px; border: 0.5px solid #d3d1c7; padding: 2.5rem 2.5rem 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.slide { display: none; }
+.slide.active { display: block; }
+.slide-label { font-size: 11px; color: #888780; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.slide-title { font-size: 24px; font-weight: 500; color: #1a1a18; line-height: 1.3; margin-bottom: 0.4rem; }
+.slide-sub { font-size: 15px; color: #5f5e5a; margin-bottom: 1.5rem; line-height: 1.6; }
+.card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+.bc { background:#FAECE7; color:#993C1D; }
+.tip { background: #f1efe8; border-left: 3px solid #D85A30; border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; margin-top: 1rem; font-size: 13px; color: #5f5e5a; line-height: 1.6; }
+.tip strong { color: #1a1a18; font-weight: 500; }
+.hl { border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.1rem; margin-bottom: 10px; }
+.hl-lbl { font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.hl-txt { font-size: 14px; color: #1a1a18; line-height: 1.6; }
+.demo-box { border: 0.5px solid #d3d1c7; border-radius: 12px; overflow: hidden; }
+.demo-top { background: #f1efe8; padding: 8px 14px; font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 0.5px solid #d3d1c7; }
+.demo-inner { padding: 1.25rem; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 0; border-top: 0.5px solid #d3d1c7; margin-top: 2rem; }
+.nav-btns { display: flex; gap: 8px; align-items: center; }
+.nbtn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 7px 18px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; }
+.nbtn:hover { background: #f1efe8; }
+.nbtn:disabled { opacity: 0.35; cursor: default; }
+.dots { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #b4b2a9; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.dot.on { background: #D85A30; }
+.slide-counter { font-size: 12px; color: #888780; margin-right: 8px; }
+.check { color: #1D9E75; }
+.cross { color: #A32D2D; }
+.partial { color: #BA7517; }
+.compare-tbl { width: 100%; background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem; border-collapse: separate; border-spacing: 0; }
+.compare-tbl th { font-size: 11px; color: #5f5e5a; font-weight: 500; padding: 0 8px 10px; text-align: center; }
+.compare-tbl th:first-child { text-align: left; }
+.compare-tbl td { font-size: 13px; padding: 8px; color: #1a1a18; border-top: 0.5px solid #d3d1c7; text-align: center; }
+.compare-tbl td:first-child { text-align: left; }
+.qbtn { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; color: #1a1a18; font-family: inherit; text-align: left; width: 100%; margin-bottom: 6px; transition: background 0.12s; }
+.qbtn:hover:not(:disabled) { background: #f1efe8; }
+.qbtn.correct { background: #E1F5EE; border: 1.5px solid #1D9E75; color: #085041; }
+.qbtn.wrong { background: #FCEBEB; border: 1.5px solid #A32D2D; color: #501313; }
+.qbtn.reveal { background: #E1F5EE; border: 1.5px solid #1D9E75; color: #085041; opacity: 0.6; }
+.qbtn:disabled { cursor: default; }
+.fb { border-radius: 8px; padding: 10px 14px; font-size: 13px; line-height: 1.6; margin-top: 8px; display: none; }
+.fb.show { display: block; }
+.fb.good { background: #E1F5EE; color: #085041; }
+.fb.bad { background: #FCEBEB; color: #501313; }
+.frac-inline { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+.frac-input { border: 0.5px solid #b4b2a9; border-radius: 6px; padding: 3px 4px; font-size: 14px; font-family: inherit; color: #1a1a18; background: #fff; width: 36px; text-align: center; display: block; }
+.frac-input.correct { border: 1.5px solid #1D9E75; background: #E1F5EE; color: #085041; }
+.frac-input.wrong { border: 1.5px solid #A32D2D; background: #FCEBEB; color: #501313; }
+.frac-bar { width: 36px; height: 1.5px; background: #1a1a18; margin: 2px 0; flex-shrink: 0; }
+.frac-static { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; font-size: 14px; color: #5f5e5a; line-height: 1.2; }
+.frac-static-bar { width: 100%; height: 1.5px; background: #5f5e5a; margin: 2px 0; }
+.fib-row { font-size: 15px; color: #1a1a18; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.fib-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; margin-top: 4px; }
+.fib-btn:hover { background: #f1efe8; }
+.dd-container { display: flex; gap: 12px; }
+.dd-source { flex: 1; }
+.dd-cats { flex: 1.4; display: flex; flex-direction: column; gap: 6px; }
+.dd-item { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 8px 10px; font-size: 12px; cursor: grab; margin-bottom: 5px; color: #1a1a18; line-height: 1.4; user-select: none; }
+.dd-item.placed { opacity: 0.3; cursor: default; }
+.dd-zone { border: 1.5px dashed #b4b2a9; border-radius: 8px; padding: 6px 8px; min-height: 52px; }
+.dd-zone.over { border-color: #1D9E75; background: #E1F5EE; }
+.dd-zone-lbl { font-size: 10px; color: #5f5e5a; font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.dd-placed { background: #f1efe8; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #1a1a18; margin-bottom: 3px; line-height: 1.4; }
+.dd-placed.correct { background: #E1F5EE; color: #085041; }
+.dd-placed.wrong { background: #FCEBEB; color: #501313; }
+.dd-check-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; margin-top: 8px; }
+.dd-check-btn:hover { background: #f1efe8; }
+.fc-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.5rem; text-align: center; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px; transition: background 0.15s; }
+.fc-card:hover { background: #f1efe8; }
+.fc-front { font-size: 22px; font-weight: 500; color: #1a1a18; }
+.fc-back { font-size: 13px; color: #5f5e5a; line-height: 1.6; display: none; white-space: pre-line; }
+.fc-hint { font-size: 11px; color: #888780; margin-top: 8px; }
+.fc-nav { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.fc-nav-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; }
+.fc-nav-btn:hover { background: #f1efe8; }
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.match-btn { background: #fff; border: 2px solid transparent; border-radius: 8px; padding: 10px 12px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; text-align: center; line-height: 1.4; }
+.match-btn:hover:not(:disabled):not(.selected):not(.matched) { background: #f1efe8; }
+.match-btn.selected { border: 2px solid #534AB7 !important; background: #EEEDFE !important; color: #3C3489 !important; font-weight: 500; }
+.match-btn.matched { background: #E1F5EE !important; border: 2px solid #1D9E75 !important; color: #085041 !important; cursor: default; }
+.match-btn.wrong-flash { background: #FCEBEB !important; border: 2px solid #A32D2D !important; color: #501313 !important; }
+.match-btn:disabled { cursor: default; }
+.branch-text { font-size: 14px; color: #1a1a18; line-height: 1.7; margin-bottom: 1rem; background: #f1efe8; border-radius: 8px; padding: 1rem; white-space: pre-line; }
+.branch-choice { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 10px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; text-align: left; width: 100%; margin-bottom: 8px; line-height: 1.4; }
+.branch-choice:hover { background: #f1efe8; }
+.branch-outcome { border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+.bar-model { margin: 1rem 0; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-lbl { font-size: 12px; color: #5f5e5a; width: 110px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; background: #f1efe8; border-radius: 4px; height: 28px; overflow: hidden; }
+.step-list { list-style: none; }
+.step-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #d3d1c7; align-items: flex-start; }
+.step-list li:last-child { border-bottom: none; }
+.step-num { background: #f1efe8; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #5f5e5a; flex-shrink: 0; margin-top: 2px; }
+.step-txt { font-size: 14px; color: #1a1a18; font-weight: 500; line-height: 1.5; }
+.step-sub { font-size: 12px; color: #5f5e5a; margin-top: 2px; line-height: 1.5; }
+.assess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.assess-card { border-radius: 10px; padding: 1rem; }
+.assess-card.formative { background: #E1F5EE; border: 0.5px solid #5DCAA5; }
+.assess-card.graded { background: #EEEDFE; border: 0.5px solid #AFA9EC; }
+.assess-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.assess-card.formative .assess-card-title { color: #085041; }
+.assess-card.graded .assess-card-title { color: #3C3489; }
+.assess-card-body { font-size: 12px; line-height: 1.6; }
+.assess-card.formative .assess-card-body { color: #0F6E56; }
+.assess-card.graded .assess-card-body { color: #534AB7; }
+.scorm-can { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.scorm-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 10px; padding: 1rem; }
+.scorm-card-icon { font-size: 22px; margin-bottom: 6px; }
+.scorm-card-title { font-size: 13px; font-weight: 500; color: #1a1a18; margin-bottom: 4px; }
+.scorm-card-body { font-size: 12px; color: #5f5e5a; line-height: 1.5; }
+.caveat-box { background: #FAEEDA; border: 0.5px solid #FAC775; border-radius: 10px; padding: 1rem; font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 1rem; }
+.caveat-box strong { color: #412402; font-weight: 500; }
+.artifact-index { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.artifact-index-item { display: flex; align-items: center; gap: 10px; background: #fff; border: 0.5px solid #d3d1c7; border-radius: 10px; padding: 10px 12px; }
+.artifact-index-num { background: #f1efe8; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #5f5e5a; flex-shrink: 0; }
+.artifact-index-label { font-size: 13px; color: #1a1a18; }
+.artifact-index-sub { font-size: 11px; color: #888780; margin-top: 1px; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<div class="slide active" id="s0">
+  <div class="slide-label">Team share · June 2026</div>
+  <div class="slide-title">Meet Claude</div>
+  <div class="slide-sub">An AI assistant built by Anthropic. Here's how it fits alongside the tools we already use — and what it can do that nothing else can.</div>
+  <div class="g3">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;color:#888780;">⊕</div>
+      <div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">General AI chat</div>
+      <div style="font-size:14px;font-weight:500;">ChatGPT</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">🎓</div>
+      <div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">Education-specific AI</div>
+      <div style="font-size:14px;font-weight:500;">MagicSchool</div>
+    </div>
+    <div class="card" style="text-align:center;border:2px solid #F0997B;">
+      <div style="font-size:28px;margin-bottom:8px;">🤖</div>
+      <div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">Reasoning + live artifacts</div>
+      <div style="font-size:14px;font-weight:500;">Claude</div>
+      <div style="margin-top:6px;"><span class="badge bc">Today's focus</span></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Access:</strong> claude.ai in any browser. Free account includes full artifact generation — no install, no credit card required to start.</div>
+</div>
+
+<div class="slide" id="s1">
+  <div class="slide-label">Slide 2 of 15</div>
+  <div class="slide-title">Same, different, and unique</div>
+  <div class="slide-sub">Claude shares some ground with tools we already use — but one capability stands completely apart.</div>
+  <table class="compare-tbl">
+    <thead><tr><th>Capability</th><th>ChatGPT</th><th>MagicSchool</th><th style="color:#1a1a18;">Claude</th></tr></thead>
+    <tbody>
+      <tr><td>Generate text content</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Write quiz questions</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Education-specific tools</td><td class="cross">✗</td><td class="check">✓</td><td class="partial">〜</td></tr>
+      <tr><td>Upload &amp; analyze a PDF</td><td class="check">✓</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Consistent tone across a full course</td><td class="partial">〜</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td style="font-weight:500;">Build interactive artifacts</td><td class="cross">✗</td><td class="cross">✗</td><td class="check" style="color:#1D9E75;font-weight:500;">✓ only Claude</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:11px;color:#888780;margin-top:6px;">✓ strong &nbsp; 〜 partial &nbsp; ✗ not available</div>
+</div>
+
+<div class="slide" id="s2">
+  <div class="slide-label">Slide 3 of 15</div>
+  <div class="slide-title">What is an artifact?</div>
+  <div class="slide-sub">An artifact is a live, working output that Claude builds and renders right inside the conversation — not just text you copy and paste into something else.</div>
+  <div class="hl" style="border-left:3px solid #534AB7;border-radius:0 12px 12px 0;">
+    <div class="hl-lbl">What kinds of artifacts can Claude build?</div>
+    <div class="hl-txt">Formatted documents, spreadsheets, slide decks, interactive quizzes, drag-and-drop activities, visual models, flashcard sets, branching scenarios — all from a single prompt.</div>
+  </div>
+  <div class="hl" style="border-left:3px solid #1D9E75;border-radius:0 12px 12px 0;">
+    <div class="hl-lbl">What do you do with an artifact?</div>
+    <div class="hl-txt">Copy the HTML and paste it into Mindsmith's embed tile, drop it into a Brightspot content block, or hand it to a developer to wrap in a SCORM package for LMS score tracking.</div>
+  </div>
+</div>
+
+<div class="slide" id="s3">
+  <div class="slide-label">Slide 4 of 15</div>
+  <div class="slide-title">Seven artifacts — all Grade 5</div>
+  <div class="slide-sub">Each of the following slides shows a different type of artifact Claude can build. Every example is Grade 5 math or ELA and was generated from a single prompt.</div>
+  <div class="artifact-index">
+    <div class="artifact-index-item"><div class="artifact-index-num">1</div><div><div class="artifact-index-label">Multiple choice</div><div class="artifact-index-sub">Math · Volume</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">2</div><div><div class="artifact-index-label">Drag-and-drop sorting</div><div class="artifact-index-sub">ELA · Text structures</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">3</div><div><div class="artifact-index-label">Fill in the blank</div><div class="artifact-index-sub">Math · Multiplying fractions</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">4</div><div><div class="artifact-index-label">Flashcard set</div><div class="artifact-index-sub">ELA · Figurative language</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">5</div><div><div class="artifact-index-label">Matching game</div><div class="artifact-index-sub">Math · Decimal place value</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">6</div><div><div class="artifact-index-label">Branching scenario</div><div class="artifact-index-sub">ELA · Point of view</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">7</div><div><div class="artifact-index-label">Word problem + visual model</div><div class="artifact-index-sub">Math · Fraction division</div></div></div>
+  </div>
+</div>
+
+<div class="slide" id="s4">
+  <div class="slide-label">Slide 5 of 15 · Grade 5 Math</div>
+  <div class="slide-title">Artifact 1 — Multiple choice</div>
+  <div class="slide-sub">Topic: Volume of rectangular prisms (5.MD.C.3)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — try it</div>
+    <div class="demo-inner">
+      <div style="font-size:15px;font-weight:500;color:#1a1a18;margin-bottom:4px;">A rectangular prism has a length of 4 cm, width of 3 cm, and height of 5 cm. What is its volume?</div>
+      <div style="font-size:12px;color:#5f5e5a;margin-bottom:12px;">Select the correct answer.</div>
+      <button class="qbtn" onclick="mcAnswer(this,false,'Volume = l × w × h = 4 × 3 × 5. That gives 60, not 12. Make sure you multiply all three dimensions.')">12 cubic cm</button>
+      <button class="qbtn" onclick="mcAnswer(this,false,'Close — but 40 only uses two dimensions. Volume = 4 × 3 × 5 = 60 cubic cm.')">40 cubic cm</button>
+      <button class="qbtn" onclick="mcAnswer(this,true,'Correct! Volume = l × w × h = 4 × 3 × 5 = 60 cubic cm.')">60 cubic cm</button>
+      <button class="qbtn" onclick="mcAnswer(this,false,'That adds the dimensions instead of multiplying. Volume = 4 × 3 × 5 = 60 cubic cm.')">35 cubic cm</button>
+      <div class="fb" id="mc-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a multiple choice knowledge check on volume of rectangular prisms for Grade 5 with immediate feedback for each answer choice."</div>
+</div>
+
+<div class="slide" id="s5">
+  <div class="slide-label">Slide 6 of 15 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 2 — Drag-and-drop sorting</div>
+  <div class="slide-sub">Topic: Informational text structures (RI.5.5)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — drag each sentence to its text structure</div>
+    <div class="demo-inner">
+      <div class="dd-container">
+        <div class="dd-source">
+          <div style="font-size:10px;color:#888780;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Sentences</div>
+          <div id="dd-items"></div>
+        </div>
+        <div class="dd-cats">
+          <div style="font-size:10px;color:#888780;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Text Structures</div>
+          <div class="dd-zone" id="ddz0" ondragover="ddOver(event)" ondrop="ddDrop(event,0)"><div class="dd-zone-lbl">Cause & Effect</div></div>
+          <div class="dd-zone" id="ddz1" ondragover="ddOver(event)" ondrop="ddDrop(event,1)"><div class="dd-zone-lbl">Compare & Contrast</div></div>
+          <div class="dd-zone" id="ddz2" ondragover="ddOver(event)" ondrop="ddDrop(event,2)"><div class="dd-zone-lbl">Sequence</div></div>
+          <div class="dd-zone" id="ddz3" ondragover="ddOver(event)" ondrop="ddDrop(event,3)"><div class="dd-zone-lbl">Problem & Solution</div></div>
+        </div>
+      </div>
+      <button class="dd-check-btn" onclick="ddCheck()">Check answers</button>
+      <div class="fb" id="dd-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a drag-and-drop sorting activity for Grade 5 ELA on informational text structures. Four sentences, one per structure type."</div>
+</div>
+
+<div class="slide" id="s6">
+  <div class="slide-label">Slide 7 of 15 · Grade 5 Math</div>
+  <div class="slide-title">Artifact 3 — Fill in the blank</div>
+  <div class="slide-sub">Topic: Multiplying fractions (5.NF.B.4)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — type your answers</div>
+    <div class="demo-inner">
+      <div style="font-size:13px;color:#5f5e5a;margin-bottom:14px;">Complete each equation. Simplify your answer.</div>
+      <div class="fib-row">1. &nbsp;<span class="frac-static"><span>2</span><div class="frac-static-bar"></div><span>3</span></span>&nbsp;×&nbsp;<span class="frac-static"><span>3</span><div class="frac-static-bar"></div><span>4</span></span>&nbsp;=&nbsp;<span class="frac-inline"><input class="frac-input" id="fib0n" placeholder="?"><div class="frac-bar"></div><input class="frac-input" id="fib0d" placeholder="?"></span></div>
+      <div class="fib-row">2. &nbsp;<span class="frac-static"><span>1</span><div class="frac-static-bar"></div><span>2</span></span>&nbsp;×&nbsp;<span class="frac-static"><span>4</span><div class="frac-static-bar"></div><span>5</span></span>&nbsp;=&nbsp;<span class="frac-inline"><input class="frac-input" id="fib1n" placeholder="?"><div class="frac-bar"></div><input class="frac-input" id="fib1d" placeholder="?"></span></div>
+      <div class="fib-row">3. &nbsp;<span class="frac-static"><span>3</span><div class="frac-static-bar"></div><span>5</span></span>&nbsp;×&nbsp;<span class="frac-static"><span>5</span><div class="frac-static-bar"></div><span>6</span></span>&nbsp;=&nbsp;<span class="frac-inline"><input class="frac-input" id="fib2n" placeholder="?"><div class="frac-bar"></div><input class="frac-input" id="fib2d" placeholder="?"></span></div>
+      <button class="fib-btn" onclick="fibCheck()">Check answers</button>
+      <div class="fb" id="fib-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Create a fill-in-the-blank activity for Grade 5 multiplying fractions. Three problems, answers must be simplified, with feedback."</div>
+</div>
+
+<div class="slide" id="s7">
+  <div class="slide-label">Slide 8 of 15 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 4 — Flashcard set</div>
+  <div class="slide-sub">Topic: Figurative language (L.5.5)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — click the card to flip it</div>
+    <div class="demo-inner">
+      <div class="fc-card" id="fc-card" onclick="fcFlip()">
+        <div class="fc-front" id="fc-front"></div>
+        <div class="fc-back" id="fc-back"></div>
+        <div class="fc-hint" id="fc-hint">Click to reveal definition</div>
+      </div>
+      <div class="fc-nav">
+        <button class="fc-nav-btn" onclick="fcNav(-1)">← Prev</button>
+        <span style="font-size:13px;color:#5f5e5a;" id="fc-counter"></span>
+        <button class="fc-nav-btn" onclick="fcNav(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Make a flashcard set for Grade 5 figurative language. Term on the front, definition and example sentence on the back."</div>
+</div>
+
+<div class="slide" id="s8">
+  <div class="slide-label">Slide 9 of 15 · Grade 5 Math</div>
+  <div class="slide-title">Artifact 5 — Matching game</div>
+  <div class="slide-sub">Topic: Decimal place value (5.NBT.A.1)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — match each decimal to its word form</div>
+    <div class="demo-inner">
+      <div style="font-size:13px;color:#5f5e5a;margin-bottom:10px;">Select a decimal, then select its matching word form.</div>
+      <div class="match-grid" id="match-grid"></div>
+      <div class="fb" id="match-fb" style="margin-top:10px;"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a matching game for Grade 5 decimal place value. Match standard form decimals to word form. Four pairs."</div>
+</div>
+
+<div class="slide" id="s9">
+  <div class="slide-label">Slide 10 of 15 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 6 — Branching scenario</div>
+  <div class="slide-sub">Topic: Point of view (RL.5.6)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — make choices to explore the story</div>
+    <div class="demo-inner" id="branch-inner"></div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Create a branching scenario for Grade 5 ELA on point of view. The student chooses how to narrate a scene and sees how the perspective changes the reading experience."</div>
+</div>
+
+<div class="slide" id="s10">
+  <div class="slide-label">Slide 11 of 15 · Grade 5 Math</div>
+  <div class="slide-title">Artifact 7 — Word problem with visual model</div>
+  <div class="slide-sub">Topic: Dividing unit fractions by whole numbers (5.NF.B.7)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — use the model to solve</div>
+    <div class="demo-inner">
+      <div style="font-size:15px;font-weight:500;color:#1a1a18;margin-bottom:8px;">Maya has 1/3 of a pizza. She wants to share it equally among 4 friends. What fraction of the whole pizza does each friend get?</div>
+      <div style="font-size:13px;color:#5f5e5a;margin-bottom:4px;">Use the bar model to help you.</div>
+      <div class="bar-model">
+        <div class="bar-row">
+          <div class="bar-lbl">Whole pizza</div>
+          <div class="bar-track">
+            <div style="display:flex;height:100%;width:100%;">
+              <div style="flex:1;background:#E1F5EE;border-right:1px solid #9FE1CB;display:flex;align-items:center;justify-content:center;font-size:11px;color:#085041;font-weight:500;">1/3</div>
+              <div style="flex:1;background:#f1efe8;border-right:1px solid #d3d1c7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888780;">1/3</div>
+              <div style="flex:1;background:#f1efe8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888780;">1/3</div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-lbl">Maya's share ÷ 4</div>
+          <div class="bar-track">
+            <div style="display:flex;height:100%;width:33.33%;">
+              <div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div>
+              <div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div>
+              <div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div>
+              <div style="flex:1;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fib-row">Each friend gets &nbsp;<span class="frac-inline"><input class="frac-input" id="wp-n" placeholder="?"><div class="frac-bar"></div><input class="frac-input" id="wp-d" placeholder="?"></span>&nbsp; of the whole pizza.</div>
+      <button class="fib-btn" onclick="wpCheck()">Check my answer</button>
+      <div class="fb" id="wp-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a word problem with a visual bar model for Grade 5 fraction division: 1/3 ÷ 4, with an input field for the answer."</div>
+</div>
+
+<div class="slide" id="s11">
+  <div class="slide-label">Slide 12 of 15 · Integration</div>
+  <div class="slide-title">Adding an artifact to Mindsmith</div>
+  <div class="slide-sub">Claude generates the activity. Mindsmith's embed tile does the rest.</div>
+  <ul class="step-list">
+    <li><div class="step-num">1</div><div><div class="step-txt">Ask Claude to build the activity</div><div class="step-sub">Describe what you need — topic, grade level, activity type. Claude generates it as a live artifact in the conversation.</div></div></li>
+    <li><div class="step-num">2</div><div><div class="step-txt">Copy the HTML from the artifact panel</div><div class="step-sub">Click the download or copy icon at the top of the artifact panel in Claude. The activity is a self-contained HTML file.</div></div></li>
+    <li><div class="step-num">3</div><div><div class="step-txt">Add an embed tile to your Mindsmith lesson</div><div class="step-sub">This is the same embed tile used for web components and YouTube videos.</div></div></li>
+    <li><div class="step-num">4</div><div><div class="step-txt">Paste the HTML into the embed tile</div><div class="step-sub">The activity renders live inside the lesson. Students interact with it directly — no external link, no separate tab.</div></div></li>
+  </ul>
+</div>
+
+<div class="slide" id="s12">
+  <div class="slide-label">Slide 13 of 15 · Integration</div>
+  <div class="slide-title">Adding an artifact to Brightspot</div>
+  <div class="slide-sub">The process is the same — the only variable is whether your Brightspot instance supports HTML embeds.</div>
+  <ul class="step-list">
+    <li><div class="step-num">1</div><div><div class="step-txt">Ask Claude to build the activity</div><div class="step-sub">Same as Mindsmith — describe your needs and Claude generates the artifact.</div></div></li>
+    <li><div class="step-num">2</div><div><div class="step-txt">Copy the HTML from the artifact panel</div><div class="step-sub">Click the download or copy icon at the top of the artifact panel in Claude.</div></div></li>
+    <li><div class="step-num">3</div><div><div class="step-txt">Look for an HTML or code block in the Brightspot content editor</div><div class="step-sub">If you don't see one, check with your CMS admin — whether HTML embeds are enabled depends on how your instance is configured.</div></div></li>
+    <li><div class="step-num">4</div><div><div class="step-txt">Paste the HTML into that block</div><div class="step-sub">The activity renders as part of the course page.</div></div></li>
+  </ul>
+</div>
+
+<div class="slide" id="s13">
+  <div class="slide-label">Slide 14 of 15 · Assessment</div>
+  <div class="slide-title">Formative vs. graded assessments</div>
+  <div class="slide-sub">Out of the box, Claude's artifacts give learners immediate feedback but don't report scores anywhere. Which approach you need depends on how the activity is being used.</div>
+  <div class="assess-grid">
+    <div class="assess-card formative">
+      <div class="assess-card-title">✓ &nbsp;Formative — no score capture needed</div>
+      <div class="assess-card-body">Used for practice and self-check. Learners see their own feedback in the moment. No score is sent to a gradebook or LMS. Works as-is when pasted into Mindsmith or Brightspot — nothing extra required.</div>
+    </div>
+    <div class="assess-card graded">
+      <div class="assess-card-title">📊 &nbsp;Graded — score capture required</div>
+      <div class="assess-card-body">To report scores to an LMS gradebook, the activity needs to be delivered as a SCORM package — a standard format that LMS platforms like Canvas or TalentLMS already understand. See the next slide for how Claude helps with this.</div>
+    </div>
+  </div>
+  <div class="tip"><strong>For most practice and engagement use cases,</strong> paste Claude's HTML straight into Mindsmith or Brightspot and you're done. SCORM is only needed when scores need to flow into a gradebook.</div>
+</div>
+
+<div class="slide" id="s14">
+  <div class="slide-label">Slide 15 of 15 · Assessment</div>
+  <div class="slide-title">Claude and SCORM packages</div>
+  <div class="slide-sub">SCORM is the standard format LMS platforms use to receive and record scores. Claude can generate everything needed to build one.</div>
+  <div class="scorm-can">
+    <div class="scorm-card">
+      <div class="scorm-card-icon" style="color:#1D9E75;">📄</div>
+      <div class="scorm-card-title">The activity HTML</div>
+      <div class="scorm-card-body">The interactive quiz or activity itself — the same artifact you've seen in this presentation.</div>
+    </div>
+    <div class="scorm-card">
+      <div class="scorm-card-icon" style="color:#534AB7;">⚙️</div>
+      <div class="scorm-card-title">The SCORM connector</div>
+      <div class="scorm-card-body">JavaScript that captures the learner's score and passes it to the LMS when the activity is submitted.</div>
+    </div>
+    <div class="scorm-card">
+      <div class="scorm-card-icon" style="color:#D85A30;">📋</div>
+      <div class="scorm-card-title">The manifest file</div>
+      <div class="scorm-card-body">An XML file that tells the LMS what's in the package and how to launch it.</div>
+    </div>
+  </div>
+  <div class="caveat-box">
+    <strong>The one step Claude can't do:</strong> A SCORM package is uploaded to an LMS as a .zip file. Claude generates all the files and tells you exactly how to organize and zip them — but the zipping and uploading is a manual step. It takes about two minutes once the files are ready. Testing also requires uploading to an actual LMS; SCORM Cloud offers a free tier specifically for this.
+  </div>
+  <div class="tip"><strong>Bottom line:</strong> Claude does the heavy lifting on the content and the code. You zip the files and upload. No developer required for a straightforward single-activity package.</div>
+</div>
+
+<div class="nav">
+  <div class="dots" id="dots"></div>
+  <div class="nav-btns">
+    <span class="slide-counter" id="slide-counter">1 / 15</span>
+    <button class="nbtn" id="prev-btn" onclick="changeSlide(-1)" disabled>← Prev</button>
+    <button class="nbtn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+var cur=0,total=15;
+var dotsEl=document.getElementById('dots');
+for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.setAttribute('data-i',i);d.onclick=function(){goTo(parseInt(this.getAttribute('data-i')));};dotsEl.appendChild(d);}
+function goTo(n){document.getElementById('s'+cur).classList.remove('active');document.querySelectorAll('.dot')[cur].classList.remove('on');cur=n;document.getElementById('s'+cur).classList.add('active');document.querySelectorAll('.dot')[cur].classList.add('on');document.getElementById('prev-btn').disabled=(cur===0);document.getElementById('next-btn').disabled=(cur===total-1);document.getElementById('slide-counter').textContent=(cur+1)+' / '+total;}
+function changeSlide(dir){var n=cur+dir;if(n>=0&&n<total)goTo(n);}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);if(e.key==='ArrowLeft')changeSlide(-1);});
+function mcAnswer(btn,correct,msg){var btns=btn.parentElement.querySelectorAll('.qbtn');btns.forEach(function(b){b.disabled=true;});btn.className='qbtn '+(correct?'correct':'wrong');if(!correct)btns.forEach(function(b){if(b.onclick.toString().indexOf('true')>-1)b.className='qbtn reveal';});var fb=document.getElementById('mc-fb');fb.className='fb show '+(correct?'good':'bad');fb.textContent=msg;}
+var ddData=[{correctZone:0,text:'Floods destroyed the crops, so food prices rose sharply.'},{correctZone:1,text:'Unlike rivers, lakes do not flow to the ocean.'},{correctZone:2,text:'First, water evaporates. Next, it forms clouds. Finally, it falls as rain.'},{correctZone:3,text:'The town had no clean water, so engineers built a filtration plant.'}];
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function shuffleDisplaced(arr){var s,tries=0;do{s=shuffle(arr);tries++;}while(tries<30&&s.some(function(item,i){return item.correctZone===i;}));return s;}
+var ddShuffled=shuffleDisplaced(ddData);
+var ddDragging=null;
+var ddContainer=document.getElementById('dd-items');
+ddShuffled.forEach(function(item,idx){var div=document.createElement('div');div.className='dd-item';div.draggable=true;div.id='ddi'+idx;div.setAttribute('data-correct',item.correctZone);div.textContent=item.text;div.addEventListener('dragstart',function(e){ddDragging=div.id;e.dataTransfer.effectAllowed='move';});ddContainer.appendChild(div);});
+function ddOver(e){e.preventDefault();e.currentTarget.classList.add('over');}
+document.addEventListener('dragenter',function(e){document.querySelectorAll('.dd-zone').forEach(function(z){if(!z.contains(e.target))z.classList.remove('over');});});
+function ddDrop(e,zoneIdx){e.preventDefault();e.currentTarget.classList.remove('over');if(!ddDragging)return;var item=document.getElementById(ddDragging);if(!item)return;item.classList.add('placed');item.setAttribute('draggable','false');var placed=document.createElement('div');placed.className='dd-placed';placed.textContent=item.textContent;placed.setAttribute('data-correct',item.getAttribute('data-correct'));placed.setAttribute('data-zone',zoneIdx);e.currentTarget.appendChild(placed);ddDragging=null;}
+function ddCheck(){var placed=document.querySelectorAll('.dd-placed');var correct=0;placed.forEach(function(p){if(parseInt(p.getAttribute('data-correct'))===parseInt(p.getAttribute('data-zone'))){p.classList.add('correct');correct++;}else p.classList.add('wrong');});var fb=document.getElementById('dd-fb');fb.className='fb show '+(correct===4?'good':'bad');fb.textContent=correct===4?'All four correct! You can identify cause & effect, compare & contrast, sequence, and problem & solution structures.':correct+' of 4 correct. Signal words help: "because/so" = cause & effect; "unlike/both" = compare & contrast; "first/next/finally" = sequence; "problem/solution" = problem & solution.';}
+function fracEqual(n1,d1,n2,d2){return parseInt(n1)*parseInt(d2)===parseInt(n2)*parseInt(d1);}
+function fibCheck(){var answers=[{n:'1',d:'2'},{n:'2',d:'5'},{n:'1',d:'2'}];var pairs=[[document.getElementById('fib0n'),document.getElementById('fib0d')],[document.getElementById('fib1n'),document.getElementById('fib1d')],[document.getElementById('fib2n'),document.getElementById('fib2d')]];var correct=0;pairs.forEach(function(p,i){var n=p[0].value.trim(),d=p[1].value.trim();var ok=n&&d&&fracEqual(n,d,answers[i].n,answers[i].d);p[0].className='frac-input '+(ok?'correct':'wrong');p[1].className='frac-input '+(ok?'correct':'wrong');if(ok)correct++;});var fb=document.getElementById('fib-fb');fb.className='fb show '+(correct===3?'good':'bad');fb.textContent=correct===3?'All correct! Multiply numerators together, then denominators together, then simplify.':'Check your work: multiply numerators together, denominators together, then simplify. Answers: 1/2, 2/5, 1/2.';}
+var fcCards=[{front:'Simile',back:'A comparison using "like" or "as."\n\nExample: "Her smile was as bright as the sun."'},{front:'Metaphor',back:'A direct comparison saying one thing IS another.\n\nExample: "The classroom was a zoo after recess."'},{front:'Personification',back:'Giving human qualities to a non-human thing.\n\nExample: "The wind whispered through the trees."'},{front:'Hyperbole',back:'An extreme exaggeration for effect.\n\nExample: "I\'ve told you a million times to clean your room."'},{front:'Idiom',back:'A phrase whose meaning differs from the literal words.\n\nExample: "It\'s raining cats and dogs."'}];
+var fcIdx=0,fcFlipped=false;
+function fcRender(){document.getElementById('fc-front').textContent=fcCards[fcIdx].front;document.getElementById('fc-back').style.display='none';document.getElementById('fc-front').style.display='block';document.getElementById('fc-hint').textContent='Click to reveal definition';document.getElementById('fc-counter').textContent=(fcIdx+1)+' of '+fcCards.length;fcFlipped=false;}
+function fcFlip(){if(!fcFlipped){document.getElementById('fc-front').style.display='none';var back=document.getElementById('fc-back');back.style.display='block';back.textContent=fcCards[fcIdx].back;document.getElementById('fc-hint').textContent='Click to see term again';fcFlipped=true;}else{fcRender();}}
+function fcNav(dir){fcIdx=Math.max(0,Math.min(fcCards.length-1,fcIdx+dir));fcRender();}
+fcRender();
+var matchPairs=[{a:'0.4',b:'four tenths'},{a:'0.08',b:'eight hundredths'},{a:'2.5',b:'two and five tenths'},{a:'0.037',b:'thirty-seven thousandths'}];
+var matchSelected=null,matchDone=[],flashing=false;
+function buildMatch(){var items=[];matchPairs.forEach(function(p,i){items.push({text:p.a,pair:i,side:'a'});items.push({text:p.b,pair:i,side:'b'});});items.sort(function(){return Math.random()-0.5;});var grid=document.getElementById('match-grid');grid.innerHTML='';items.forEach(function(item){var btn=document.createElement('button');btn.className='match-btn';btn.textContent=item.text;btn.setAttribute('data-pair',item.pair);btn.setAttribute('data-side',item.side);btn.addEventListener('click',function(){matchClick(btn);});grid.appendChild(btn);});}
+function matchClick(btn){if(flashing)return;if(btn.classList.contains('matched'))return;if(!matchSelected){btn.classList.add('selected');matchSelected=btn;return;}if(btn===matchSelected){btn.classList.remove('selected');matchSelected=null;return;}var p1=matchSelected.getAttribute('data-pair'),s1=matchSelected.getAttribute('data-side'),p2=btn.getAttribute('data-pair'),s2=btn.getAttribute('data-side');if(p1===p2&&s1!==s2){matchSelected.classList.remove('selected');matchSelected.classList.add('matched');matchSelected.disabled=true;btn.classList.add('matched');btn.disabled=true;matchDone.push(p1);matchSelected=null;if(matchDone.length===matchPairs.length){var fb=document.getElementById('match-fb');fb.className='fb show good';fb.textContent='All matched! You can read decimals in standard form and word form.';}}else{flashing=true;var orig=matchSelected;orig.classList.remove('selected');orig.classList.add('wrong-flash');btn.classList.add('wrong-flash');matchSelected=null;setTimeout(function(){orig.classList.remove('wrong-flash');btn.classList.remove('wrong-flash');flashing=false;},700);}}
+buildMatch();
+var branchNodes={start:{text:'You need to write about a dog finding a lost child in the park. Before you begin, you choose your narrator.',choices:[{label:"Tell it from the dog's point of view",next:'dog'},{label:"Tell it from the child's point of view",next:'child'},{label:'Tell it from an outside narrator who sees everything',next:'third'}]},dog:{text:"You write: \"I sniffed the air and caught a strange scent — not my owner, not a squirrel. A small human, trembling behind the oak tree.\"\n\nThe reader experiences everything through the dog's senses and thoughts.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]},child:{text:"You write: \"I heard something rustling in the leaves. My heart pounded. Then a wet nose pressed against my hand and I stopped crying.\"\n\nThe reader feels the child's fear and relief directly.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]},third:{text:"You write: \"The golden retriever paused, ears raised. Forty feet away, behind a gnarled oak, a six-year-old sat with her knees pulled to her chest.\"\n\nThe narrator sees both characters at once — neither perspective is hidden.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]}};
+function renderBranch(nodeId){var node=branchNodes[nodeId];var inner=document.getElementById('branch-inner');var html='<div class="branch-text">'+node.text+'</div>';if(node.outcome)html+='<div class="branch-outcome"><strong style="font-weight:500;">Point of view identified:</strong> Notice how the same scene reads completely differently depending on who is narrating — that\'s the power of point of view.</div>';node.choices.forEach(function(c){html+='<button class="branch-choice" onclick="renderBranch(\''+c.next+'\')">'+c.label+'</button>';});inner.innerHTML=html;}
+renderBranch('start');
+function wpCheck(){var n=document.getElementById('wp-n').value.trim(),d=document.getElementById('wp-d').value.trim();var ok=n&&d&&fracEqual(n,d,'1','12');document.getElementById('wp-n').className='frac-input '+(ok?'correct':'wrong');document.getElementById('wp-d').className='frac-input '+(ok?'correct':'wrong');var fb=document.getElementById('wp-fb');fb.className='fb show '+(ok?'good':'bad');fb.textContent=ok?"Correct! 1/3 ÷ 4 = 1/12. The bar model shows Maya's third split into 4 equal pieces — each is 1/12 of the whole.":'Not quite. If 1/3 is split into 4 equal pieces, each piece = 1/(3×4) = 1/12 of the whole pizza.';}
+</script>
+</body>
+</html>
+Same save instructions as before — paste into Notepad, save as presentation.html with file type set to All Files. Good luck with the presentation!
+        .cc-install-nudge { container-type: inline-size; }
+        @keyframes ccInstallNudgeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @container (max-width: 450px) {
+          .cc-install-nudge-icon { display: none; }
+        }
+      Keep going in Claude CodeSwitch to Claude Code and let Claude work directly in your repo, running and testing as it goes.Open Claude CodeSonnet 4.6 Low
