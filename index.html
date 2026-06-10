@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude for E-Learning — Team Share</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; color: #1a1a18; }
+.deck { width: 100%; max-width: 740px; background: #fff; border-radius: 16px; border: 0.5px solid #d3d1c7; padding: 2.5rem 2.5rem 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.slide { display: none; }
+.slide.active { display: block; }
+.slide-label { font-size: 11px; color: #888780; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.slide-title { font-size: 24px; font-weight: 500; color: #1a1a18; line-height: 1.3; margin-bottom: 0.4rem; }
+.slide-sub { font-size: 15px; color: #5f5e5a; margin-bottom: 1.5rem; line-height: 1.6; }
+.card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+.bc { background:#FAECE7; color:#993C1D; }
+.tip { background: #f1efe8; border-left: 3px solid #D85A30; border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; margin-top: 1rem; font-size: 13px; color: #5f5e5a; line-height: 1.6; }
+.tip strong { color: #1a1a18; font-weight: 500; }
+.hl { border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.1rem; margin-bottom: 10px; }
+.hl-lbl { font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.hl-txt { font-size: 14px; color: #1a1a18; line-height: 1.6; }
+.demo-box { border: 0.5px solid #d3d1c7; border-radius: 12px; overflow: hidden; }
+.demo-top { background: #f1efe8; padding: 8px 14px; font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 0.5px solid #d3d1c7; }
+.demo-inner { padding: 1.25rem; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 0; border-top: 0.5px solid #d3d1c7; margin-top: 2rem; }
+.nav-btns { display: flex; gap: 8px; align-items: center; }
+.nbtn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 7px 18px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; }
+.nbtn:hover { background: #f1efe8; }
+.nbtn:disabled { opacity: 0.35; cursor: default; }
+.dots { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #b4b2a9; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.dot.on { background: #D85A30; }
+.slide-counter { font-size: 12px; color: #888780; margin-right: 8px; }
+.check { color: #1D9E75; } .cross { color: #A32D2D; } .partial { color: #BA7517; }
+.compare-tbl { width: 100%; background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem; border-collapse: separate; border-spacing: 0; }
+.compare-tbl th { font-size: 11px; color: #5f5e5a; font-weight: 500; padding: 0 8px 10px; text-align: center; }
+.compare-tbl th:first-child { text-align: left; }
+.compare-tbl td { font-size: 13px; padding: 8px; color: #1a1a18; border-top: 0.5px solid #d3d1c7; text-align: center; }
+.compare-tbl td:first-child { text-align: left; }
+.fb { border-radius: 8px; padding: 10px 14px; font-size: 13px; line-height: 1.6; margin-top: 8px; display: none; }
+.fb.show { display: block; }
+.fb.good { background: #E1F5EE; color: #085041; }
+.fb.bad { background: #FCEBEB; color: #501313; }
+.frac-inline { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+.frac-input { border: 0.5px solid #b4b2a9; border-radius: 6px; padding: 3px 4px; font-size: 14px; font-family: inherit; color: #1a1a18; background: #fff; width: 36px; text-align: center; display: block; }
+.frac-input.correct { border: 1.5px solid #1D9E75; background: #E1F5EE; color: #085041; }
+.frac-input.wrong { border: 1.5px solid #A32D2D; background: #FCEBEB; color: #501313; }
+.frac-bar { width: 36px; height: 1.5px; background: #1a1a18; margin: 2px 0; flex-shrink: 0; }
+.fib-row { font-size: 15px; color: #1a1a18; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.fib-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; margin-top: 4px; }
+.fib-btn:hover { background: #f1efe8; }
+.dd-container { display: flex; gap: 12px; }
+.dd-source { flex: 1; }
+.dd-cats { flex: 1.4; display: flex; flex-direction: column; gap: 6px; }
+.dd-item { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 8px 10px; font-size: 12px; cursor: grab; margin-bottom: 5px; color: #1a1a18; line-height: 1.4; user-select: none; }
+.dd-item.placed { opacity: 0.3; cursor: default; }
+.dd-zone { border: 1.5px dashed #b4b2a9; border-radius: 8px; padding: 6px 8px; min-height: 52px; }
+.dd-zone.over { border-color: #1D9E75; background: #E1F5EE; }
+.dd-zone-lbl { font-size: 10px; color: #5f5e5a; font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.dd-placed { background: #f1efe8; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #1a1a18; margin-bottom: 3px; line-height: 1.4; }
+.dd-placed.correct { background: #E1F5EE; color: #085041; }
+.dd-placed.wrong { background: #FCEBEB; color: #501313; }
+.dd-check-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; margin-top: 8px; }
+.dd-check-btn:hover { background: #f1efe8; }
+.branch-text { font-size: 14px; color: #1a1a18; line-height: 1.7; margin-bottom: 1rem; background: #f1efe8; border-radius: 8px; padding: 1rem; white-space: pre-line; }
+.branch-choice { background: #fff; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 10px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; text-align: left; width: 100%; margin-bottom: 8px; line-height: 1.4; }
+.branch-choice:hover { background: #f1efe8; }
+.branch-outcome { border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+.bar-model { margin: 1rem 0; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-lbl { font-size: 12px; color: #5f5e5a; width: 110px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; background: #f1efe8; border-radius: 4px; height: 28px; overflow: hidden; }
+.step-list { list-style: none; }
+.step-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #d3d1c7; align-items: flex-start; }
+.step-list li:last-child { border-bottom: none; }
+.step-num { background: #f1efe8; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #5f5e5a; flex-shrink: 0; margin-top: 2px; }
+.step-txt { font-size: 14px; color: #1a1a18; font-weight: 500; line-height: 1.5; }
+.step-sub { font-size: 12px; color: #5f5e5a; margin-top: 2px; line-height: 1.5; }
+.assess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.assess-card { border-radius: 10px; padding: 1rem; }
+.assess-card.formative { background: #E1F5EE; border: 0.5px solid #5DCAA5; }
+.assess-card.graded { background: #EEEDFE; border: 0.5px solid #AFA9EC; }
+.assess-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.assess-card.formative .assess-card-title { color: #085041; }
+.assess-card.graded .assess-card-title { color: #3C3489; }
+.assess-card-body { font-size: 12px; line-height: 1.6; }
+.assess-card.formative .assess-card-body { color: #0F6E56; }
+.assess-card.graded .assess-card-body { color: #534AB7; }
+.scorm-can { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.scorm-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 10px; padding: 1rem; }
+.scorm-card-icon { font-size: 22px; margin-bottom: 6px; }
+.scorm-card-title { font-size: 13px; font-weight: 500; color: #1a1a18; margin-bottom: 4px; }
+.scorm-card-body { font-size: 12px; color: #5f5e5a; line-height: 1.5; }
+.caveat-box { background: #FAEEDA; border: 0.5px solid #FAC775; border-radius: 10px; padding: 1rem; font-size: 13px; color: #633806; line-height: 1.6; margin-bottom: 1rem; }
+.caveat-box strong { color: #412402; font-weight: 500; }
+.artifact-index { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.artifact-index-item { display: flex; align-items: center; gap: 10px; background: #fff; border: 0.5px solid #d3d1c7; border-radius: 10px; padding: 10px 12px; }
+.artifact-index-num { background: #f1efe8; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #5f5e5a; flex-shrink: 0; }
+.artifact-index-label { font-size: 13px; color: #1a1a18; }
+.artifact-index-sub { font-size: 11px; color: #888780; margin-top: 1px; }
+.ea-problem { background: #f1efe8; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+.ea-problem-label { font-size: 11px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; font-weight: 500; }
+.ea-step { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; color: #1a1a18; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; transition: background 0.15s, border-color 0.15s; line-height: 1.5; }
+.ea-step:last-child { margin-bottom: 0; }
+.ea-step:hover { background: #fff; border-color: #b4b2a9; }
+.ea-step.selected { border-color: #534AB7; background: #EEEDFE; color: #3C3489; }
+.ea-step.correct-pick { border-color: #1D9E75; background: #E1F5EE; color: #085041; cursor: default; }
+.ea-step.wrong-pick { border-color: #A32D2D; background: #FCEBEB; color: #501313; cursor: default; }
+.ea-step.dimmed { opacity: 0.45; cursor: default; }
+.ea-step-num { font-size: 11px; font-weight: 600; background: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #5f5e5a; margin-top: 1px; }
+.ea-step.selected .ea-step-num { background: #534AB7; color: #fff; }
+.ea-step.correct-pick .ea-step-num { background: #1D9E75; color: #fff; }
+.ea-step.wrong-pick .ea-step-num { background: #A32D2D; color: #fff; }
+.ea-explain { margin-top: 12px; display: none; }
+.ea-explain.show { display: block; }
+.ea-explain label { font-size: 13px; color: #5f5e5a; display: block; margin-bottom: 6px; }
+.ea-explain textarea { width: 100%; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit; color: #1a1a18; background: #fff; resize: none; outline: none; line-height: 1.6; }
+.ea-explain textarea:focus { border-color: #534AB7; }
+.ea-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.ea-submit { background: #534AB7; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; color: #fff; font-family: inherit; }
+.ea-submit:hover { background: #3C3489; }
+.ea-hint { font-size: 12px; color: #888780; }
+.jeopardy-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 1rem; }
+.j-cat { background: #185FA5; color: #fff; border-radius: 8px; padding: 10px 6px; font-size: 11px; font-weight: 500; text-align: center; line-height: 1.3; }
+.j-cell { background: #1D4B8F; color: #FFD700; border-radius: 8px; padding: 10px 6px; font-size: 16px; font-weight: 500; text-align: center; cursor: pointer; border: none; font-family: inherit; min-height: 52px; display: flex; align-items: center; justify-content: center; width: 100%; }
+.j-cell:hover:not(:disabled) { background: #2563C0; }
+.j-cell.answered { background: #3a3a3a; color: #888; cursor: default; font-size: 11px; }
+.j-cell:disabled { cursor: default; }
+.j-score { font-size: 14px; color: #5f5e5a; margin-bottom: 10px; }
+.j-score span { font-weight: 500; color: #1a1a18; }
+.j-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+.j-modal.open { display: flex; }
+.j-modal-inner { background: #1D4B8F; border-radius: 16px; padding: 2rem; max-width: 480px; width: 90%; color: #fff; }
+.j-modal-cat { font-size: 11px; color: #93C5FD; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+.j-modal-pts { font-size: 28px; font-weight: 500; color: #FFD700; margin-bottom: 12px; }
+.j-modal-q { font-size: 17px; line-height: 1.6; margin-bottom: 1.5rem; }
+.j-modal-choices { display: grid; gap: 8px; margin-bottom: 1rem; }
+.j-modal-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; color: #fff; font-family: inherit; text-align: left; }
+.j-modal-btn:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
+.j-modal-btn.correct { background: #065F46; border-color: #1D9E75; }
+.j-modal-btn.wrong { background: #7F1D1D; border-color: #A32D2D; }
+.j-modal-btn:disabled { cursor: default; }
+.j-modal-fb { font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; margin-bottom: 1rem; display: none; }
+.j-modal-fb.show { display: block; }
+.j-modal-fb.good { background: #065F46; }
+.j-modal-fb.bad { background: #7F1D1D; }
+.j-close-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; color: #fff; font-family: inherit; }
+.j-close-btn:hover { background: rgba(255,255,255,0.25); }
+.sf-intro { font-size: 13px; color: #5f5e5a; margin-bottom: 1rem; line-height: 1.6; }
+.sf-item { background: #f1efe8; border-radius: 10px; padding: 1rem; margin-bottom: 10px; }
+.sf-item.correct { background: #E1F5EE; border: 1.5px solid #1D9E75; }
+.sf-item.wrong { background: #FCEBEB; border: 1.5px solid #A32D2D; }
+.sf-sentence { font-size: 15px; color: #1a1a18; line-height: 2.2; margin-bottom: 4px; }
+.sf-select { font-size: 14px; font-family: inherit; color: #1a1a18; background: #fff; border: 1.5px solid #b4b2a9; border-radius: 6px; padding: 3px 8px; cursor: pointer; outline: none; margin: 0 3px; vertical-align: middle; }
+.sf-select:focus { border-color: #534AB7; }
+.sf-select.correct { border-color: #1D9E75; background: #E1F5EE; color: #085041; }
+.sf-select.wrong { border-color: #A32D2D; background: #FCEBEB; color: #501313; }
+.sf-select:disabled { cursor: default; }
+.sf-feedback { font-size: 12px; margin-top: 6px; line-height: 1.5; display: none; }
+.sf-feedback.show { display: block; }
+.sf-feedback.good { color: #085041; }
+.sf-feedback.bad { color: #501313; }
+.sf-btn { background: transparent; border: 0.5px solid #b4b2a9; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; font-family: inherit; margin-top: 10px; }
+.sf-btn:hover { background: #f1efe8; }
+.sf-score-box { background: #EEEDFE; border: 0.5px solid #AFA9EC; border-radius: 10px; padding: 1rem; margin-top: 1rem; text-align: center; display: none; }
+.sf-score-box.show { display: block; }
+.sf-score-num { font-size: 28px; font-weight: 500; color: #3C3489; }
+.sf-score-msg { font-size: 14px; color: #534AB7; margin-top: 4px; }
+.go-container { display: flex; flex-direction: column; gap: 10px; }
+.go-row { display: grid; gap: 10px; }
+.go-box { border: 1.5px solid #d3d1c7; border-radius: 10px; padding: 10px; }
+.go-box-label { font-size: 10px; color: #888780; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; font-weight: 500; }
+.go-textarea { width: 100%; border: none; background: transparent; font-family: inherit; font-size: 13px; color: #1a1a18; resize: none; outline: none; line-height: 1.6; }
+.go-center { background: #EEEDFE; border-color: #AFA9EC; }
+.go-center .go-box-label { color: #3C3489; }
+.go-resolution { background: #E1F5EE; border-color: #5DCAA5; }
+.go-resolution .go-box-label { color: #085041; }
+.cat-section { margin-bottom: 1.25rem; }
+.cat-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1.5px solid #d3d1c7; }
+.cat-icon { font-size: 16px; }
+.cat-title { font-size: 13px; font-weight: 500; color: #1a1a18; }
+.cat-items { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
+.cat-item { font-size: 13px; color: #5f5e5a; padding: 3px 0; display: flex; align-items: center; gap: 6px; line-height: 1.4; }
+.cat-item.hi { color: #1a1a18; }
+.cat-item.hi::before { content: "★"; font-size: 10px; color: #534AB7; flex-shrink: 0; }
+.cat-item:not(.hi)::before { content: "·"; font-size: 14px; color: #b4b2a9; flex-shrink: 0; line-height: 1; }
+.cat-legend { font-size: 12px; color: #888780; margin-top: 1rem; display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<div class="slide active" id="s0">
+  <div class="slide-label">Team share · June 2026</div>
+  <div class="slide-title">Meet Claude</div>
+  <div class="slide-sub">An AI assistant built by Anthropic. Here's how it fits alongside the tools we already use — and what it can do that nothing else can.</div>
+  <div class="g3">
+    <div class="card" style="text-align:center;"><div style="font-size:28px;margin-bottom:8px;color:#888780;">⊕</div><div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">General AI chat</div><div style="font-size:14px;font-weight:500;">ChatGPT</div></div>
+    <div class="card" style="text-align:center;"><div style="font-size:28px;margin-bottom:8px;">🎓</div><div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">Education-specific AI</div><div style="font-size:14px;font-weight:500;">MagicSchool</div></div>
+    <div class="card" style="text-align:center;border:2px solid #F0997B;"><div style="font-size:28px;margin-bottom:8px;">🤖</div><div style="font-size:12px;color:#5f5e5a;margin-bottom:4px;">Reasoning + live artifacts</div><div style="font-size:14px;font-weight:500;">Claude</div><div style="margin-top:6px;"><span class="badge bc">Today's focus</span></div></div>
+  </div>
+  <div class="tip"><strong>Access:</strong> claude.ai in any browser. Free account includes full artifact generation — no install, no credit card required to start.</div>
+</div>
+
+<div class="slide" id="s1">
+  <div class="slide-label">Slide 2 of 16</div>
+  <div class="slide-title">Same, different, and unique</div>
+  <div class="slide-sub">Claude shares some ground with tools we already use — but one capability stands completely apart.</div>
+  <table class="compare-tbl">
+    <thead><tr><th>Capability</th><th>ChatGPT</th><th>MagicSchool</th><th style="color:#1a1a18;">Claude</th></tr></thead>
+    <tbody>
+      <tr><td>Generate text content</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Write quiz questions</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Education-specific tools</td><td class="cross">✗</td><td class="check">✓</td><td class="partial">〜</td></tr>
+      <tr><td>Upload &amp; analyze a PDF</td><td class="check">✓</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Consistent tone across a full course</td><td class="partial">〜</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td style="font-weight:500;">Build interactive artifacts</td><td class="cross">✗</td><td class="cross">✗</td><td class="check" style="color:#1D9E75;font-weight:500;">✓ only Claude</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:11px;color:#888780;margin-top:6px;">✓ strong &nbsp; 〜 partial &nbsp; ✗ not available</div>
+</div>
+
+<div class="slide" id="s2">
+  <div class="slide-label">Slide 3 of 16</div>
+  <div class="slide-title">What is an artifact?</div>
+  <div class="slide-sub">An artifact is a live, working output that Claude builds and renders right inside the conversation — not just text you copy and paste into something else.</div>
+  <div class="hl" style="border-left:3px solid #534AB7;border-radius:0 12px 12px 0;"><div class="hl-lbl">What kinds of artifacts can Claude build?</div><div class="hl-txt">Formatted documents, slide decks, interactive quizzes, drag-and-drop activities, visual models, error analysis activities, Jeopardy boards, sentence frames, graphic organizers — all from a single prompt.</div></div>
+  <div class="hl" style="border-left:3px solid #1D9E75;border-radius:0 12px 12px 0;"><div class="hl-lbl">What do you do with an artifact?</div><div class="hl-txt">Copy the HTML and paste it into Mindsmith's embed tile, drop it into a Brightspot content block, or hand it to a developer to wrap in a SCORM package for LMS score tracking.</div></div>
+</div>
+
+<div class="slide" id="s3">
+  <div class="slide-label">Slide 4 of 16</div>
+  <div class="slide-title">Seven artifact demos — Grades 3–5</div>
+  <div class="slide-sub">Each demo shows an interactive type Claude can build that Mindsmith cannot. Every example was generated from a single prompt.</div>
+  <div class="artifact-index">
+    <div class="artifact-index-item"><div class="artifact-index-num">1</div><div><div class="artifact-index-label">Drag-and-drop sorting</div><div class="artifact-index-sub">Grade 5 ELA · Text structures</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">2</div><div><div class="artifact-index-label">Branching scenario</div><div class="artifact-index-sub">Grade 5 ELA · Point of view</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">3</div><div><div class="artifact-index-label">Word problem + visual model</div><div class="artifact-index-sub">Grade 5 Math · Fraction division</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">4</div><div><div class="artifact-index-label">Error analysis</div><div class="artifact-index-sub">Grade 4 Math · Multiplication</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">5</div><div><div class="artifact-index-label">Jeopardy quiz board</div><div class="artifact-index-sub">Grades 3–5 · Mixed review</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">6</div><div><div class="artifact-index-label">Sentence frames with dropdowns</div><div class="artifact-index-sub">Grade 5 ELA · Figurative language</div></div></div>
+    <div class="artifact-index-item"><div class="artifact-index-num">7</div><div><div class="artifact-index-label">Graphic organizer</div><div class="artifact-index-sub">Grade 4 ELA · Story elements</div></div></div>
+  </div>
+</div>
+
+<div class="slide" id="s4">
+  <div class="slide-label">Slide 5 of 16 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 1 — Drag-and-drop sorting</div>
+  <div class="slide-sub">Topic: Informational text structures (RI.5.5)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — drag each sentence to its text structure</div>
+    <div class="demo-inner">
+      <div class="dd-container">
+        <div class="dd-source"><div style="font-size:10px;color:#888780;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Sentences</div><div id="dd-items"></div></div>
+        <div class="dd-cats">
+          <div style="font-size:10px;color:#888780;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Text Structures</div>
+          <div class="dd-zone" id="ddz0" ondragover="ddOver(event)" ondrop="ddDrop(event,0)"><div class="dd-zone-lbl">Cause & Effect</div></div>
+          <div class="dd-zone" id="ddz1" ondragover="ddOver(event)" ondrop="ddDrop(event,1)"><div class="dd-zone-lbl">Compare & Contrast</div></div>
+          <div class="dd-zone" id="ddz2" ondragover="ddOver(event)" ondrop="ddDrop(event,2)"><div class="dd-zone-lbl">Sequence</div></div>
+          <div class="dd-zone" id="ddz3" ondragover="ddOver(event)" ondrop="ddDrop(event,3)"><div class="dd-zone-lbl">Problem & Solution</div></div>
+        </div>
+      </div>
+      <button class="dd-check-btn" onclick="ddCheck()">Check answers</button>
+      <div class="fb" id="dd-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a drag-and-drop sorting activity for Grade 5 ELA on informational text structures. Four sentences, one per structure type, sentences shuffled."</div>
+</div>
+
+<div class="slide" id="s5">
+  <div class="slide-label">Slide 6 of 16 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 2 — Branching scenario</div>
+  <div class="slide-sub">Topic: Point of view (RL.5.6)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — make choices to explore the story</div>
+    <div class="demo-inner" id="branch-inner"></div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Create a branching scenario for Grade 5 ELA on point of view. The student chooses how to narrate a scene and sees how the perspective changes the reading experience."</div>
+</div>
+
+<div class="slide" id="s6">
+  <div class="slide-label">Slide 7 of 16 · Grade 5 Math</div>
+  <div class="slide-title">Artifact 3 — Word problem with visual model</div>
+  <div class="slide-sub">Topic: Dividing unit fractions by whole numbers (5.NF.B.7)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — use the model to solve</div>
+    <div class="demo-inner">
+      <div style="font-size:15px;font-weight:500;color:#1a1a18;margin-bottom:8px;">Maya has 1/3 of a pizza. She wants to share it equally among 4 friends. What fraction of the whole pizza does each friend get?</div>
+      <div style="font-size:13px;color:#5f5e5a;margin-bottom:4px;">Use the bar model to help you.</div>
+      <div class="bar-model">
+        <div class="bar-row"><div class="bar-lbl">Whole pizza</div><div class="bar-track"><div style="display:flex;height:100%;width:100%;"><div style="flex:1;background:#E1F5EE;border-right:1px solid #9FE1CB;display:flex;align-items:center;justify-content:center;font-size:11px;color:#085041;font-weight:500;">1/3</div><div style="flex:1;background:#f1efe8;border-right:1px solid #d3d1c7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888780;">1/3</div><div style="flex:1;background:#f1efe8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888780;">1/3</div></div></div></div>
+        <div class="bar-row"><div class="bar-lbl">Maya's share ÷ 4</div><div class="bar-track"><div style="display:flex;height:100%;width:33.33%;"><div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div><div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div><div style="flex:1;background:#EEEDFE;border-right:1px solid #AFA9EC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div><div style="flex:1;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:10px;color:#3C3489;">?</div></div></div></div>
+      </div>
+      <div class="fib-row">Each friend gets &nbsp;<span class="frac-inline"><input class="frac-input" id="wp-n" placeholder="?"><div class="frac-bar"></div><input class="frac-input" id="wp-d" placeholder="?"></span>&nbsp; of the whole pizza.</div>
+      <button class="fib-btn" onclick="wpCheck()">Check my answer</button>
+      <div class="fb" id="wp-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a word problem with a visual bar model for Grade 5 fraction division: 1/3 divided by 4, with an input field for the answer."</div>
+</div>
+
+<div class="slide" id="s7">
+  <div class="slide-label">Slide 8 of 16 · Grade 4 Math</div>
+  <div class="slide-title">Artifact 4 — Error analysis</div>
+  <div class="slide-sub">Topic: Multi-digit multiplication (4.NBT.B.5)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — find and explain the mistake</div>
+    <div class="demo-inner">
+      <div style="font-size:14px;font-weight:500;color:#1a1a18;margin-bottom:12px;">A student solved 34 × 26. Read each step carefully, click the one containing the error, then explain the mistake in your own words.</div>
+      <div class="ea-problem">
+        <div class="ea-problem-label">Student's work</div>
+        <div class="ea-step" id="ea-s1" onclick="eaSelect(1)"><div class="ea-step-num">1</div><div>Multiply 34 × 6 = 204</div></div>
+        <div class="ea-step" id="ea-s2" onclick="eaSelect(2)"><div class="ea-step-num">2</div><div>Multiply 34 × 20 = 640</div></div>
+        <div class="ea-step" id="ea-s3" onclick="eaSelect(3)"><div class="ea-step-num">3</div><div>Add the partial products: 204 + 640 = 844</div></div>
+      </div>
+      <div class="ea-explain" id="ea-explain">
+        <label>You selected <strong id="ea-selected-label"></strong>. Explain why this step is wrong:</label>
+        <textarea id="ea-explanation" rows="3" placeholder="Type your explanation here..."></textarea>
+        <div class="ea-row">
+          <button class="ea-submit" onclick="eaSubmit()">Submit explanation</button>
+          <div class="ea-hint" id="ea-hint"></div>
+        </div>
+      </div>
+      <div class="fb" id="ea-fb"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Create an error analysis activity for Grade 4 multiplication. Show a student's worked solution with one deliberate mistake. The student clicks the wrong step and types an explanation."</div>
+</div>
+
+<div class="slide" id="s8">
+  <div class="slide-label">Slide 9 of 16 · Grades 3–5 Mixed</div>
+  <div class="slide-title">Artifact 5 — Jeopardy quiz board</div>
+  <div class="slide-sub">Topic: Mixed math and ELA review</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — click a point value to answer that question</div>
+    <div class="demo-inner">
+      <div class="j-score">Score: <span id="j-score-val">0</span> points</div>
+      <div class="jeopardy-board" id="j-board"></div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a Jeopardy-style quiz board for Grades 3–5 with four categories and four point values each. Include multiple choice questions with immediate feedback."</div>
+</div>
+
+<div class="slide" id="s9">
+  <div class="slide-label">Slide 10 of 16 · Grade 5 ELA</div>
+  <div class="slide-title">Artifact 6 — Sentence frames with dropdowns</div>
+  <div class="slide-sub">Topic: Figurative language (L.5.5)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — choose the correct word for each blank</div>
+    <div class="demo-inner">
+      <div class="sf-intro">Each sentence describes or uses a type of figurative language. Choose the word that best completes each sentence.</div>
+      <div class="sf-item" id="sf0">
+        <div class="sf-sentence">"The classroom was a <select class="sf-select" id="sf0a"><option value="">--</option><option value="zoo">zoo</option><option value="library">library</option><option value="simile">simile</option><option value="haiku">haiku</option></select>" is an example of a <select class="sf-select" id="sf0b"><option value="">--</option><option value="simile">simile</option><option value="metaphor">metaphor</option><option value="hyperbole">hyperbole</option><option value="idiom">idiom</option></select> because it compares the classroom directly to something else without using "like" or "as."</div>
+        <div class="sf-feedback" id="sf0-fb"></div>
+      </div>
+      <div class="sf-item" id="sf1">
+        <div class="sf-sentence">"I have told you a <select class="sf-select" id="sf1a"><option value="">--</option><option value="million">million</option><option value="few">few</option><option value="couple">couple</option><option value="dozen">dozen</option></select> times to clean your room!" is an example of <select class="sf-select" id="sf1b"><option value="">--</option><option value="personification">personification</option><option value="alliteration">alliteration</option><option value="hyperbole">hyperbole</option><option value="onomatopoeia">onomatopoeia</option></select> because the number is a wild exaggeration for effect.</div>
+        <div class="sf-feedback" id="sf1-fb"></div>
+      </div>
+      <div class="sf-item" id="sf2">
+        <div class="sf-sentence">"The wind <select class="sf-select" id="sf2a"><option value="">--</option><option value="whispered">whispered</option><option value="blew">blew</option><option value="stopped">stopped</option><option value="chilled">chilled</option></select> through the trees" is an example of <select class="sf-select" id="sf2b"><option value="">--</option><option value="simile">simile</option><option value="metaphor">metaphor</option><option value="personification">personification</option><option value="rhyme">rhyme</option></select> because the wind is given a human ability.</div>
+        <div class="sf-feedback" id="sf2-fb"></div>
+      </div>
+      <div class="sf-item" id="sf3">
+        <div class="sf-sentence">"It's raining cats and dogs" is an example of an <select class="sf-select" id="sf3a"><option value="">--</option><option value="idiom">idiom</option><option value="allusion">allusion</option><option value="oxymoron">oxymoron</option><option value="analogy">analogy</option></select> because the phrase means something <select class="sf-select" id="sf3b"><option value="">--</option><option value="literal">literal</option><option value="different">different</option><option value="similar">similar</option><option value="opposite">opposite</option></select> from its actual words.</div>
+        <div class="sf-feedback" id="sf3-fb"></div>
+      </div>
+      <div class="sf-item" id="sf4">
+        <div class="sf-sentence">"Her smile was as bright as the <select class="sf-select" id="sf4a"><option value="">--</option><option value="sun">sun</option><option value="moon">moon</option><option value="rain">rain</option><option value="cloud">cloud</option></select>" is a <select class="sf-select" id="sf4b"><option value="">--</option><option value="metaphor">metaphor</option><option value="simile">simile</option><option value="hyperbole">hyperbole</option><option value="alliteration">alliteration</option></select> because it uses the word "as" to make a comparison.</div>
+        <div class="sf-feedback" id="sf4-fb"></div>
+      </div>
+      <button class="sf-btn" onclick="sfCheck()">Check all answers</button>
+      <button class="sf-btn" onclick="sfReset()" style="margin-left:6px;">Reset</button>
+      <div class="sf-score-box" id="sf-score-box">
+        <div class="sf-score-num" id="sf-score-num"></div>
+        <div class="sf-score-msg" id="sf-score-msg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a sentence frames activity for Grade 5 ELA on figurative language. Five sentences with dropdown blanks. Each sentence uses or describes a figure of speech. Include feedback and a score summary."</div>
+</div>
+
+<div class="slide" id="s10">
+  <div class="slide-label">Slide 11 of 16 · Grade 4 ELA</div>
+  <div class="slide-title">Artifact 7 — Graphic organizer</div>
+  <div class="slide-sub">Topic: Story elements (RL.4.3)</div>
+  <div class="demo-box">
+    <div class="demo-top">Live demo — fill in the organizer for any book</div>
+    <div class="demo-inner">
+      <div style="font-size:13px;color:#5f5e5a;margin-bottom:12px;">Use this organizer to analyze the story elements of any book you're reading.</div>
+      <div class="go-container">
+        <div class="go-box go-center"><div class="go-box-label">📖 Title & Author</div><textarea class="go-textarea" rows="1" placeholder="Enter the title and author..."></textarea></div>
+        <div class="go-row" style="grid-template-columns:1fr 1fr;">
+          <div class="go-box"><div class="go-box-label">👤 Characters</div><textarea class="go-textarea" rows="3" placeholder="Who are the main characters? What are they like?"></textarea></div>
+          <div class="go-box"><div class="go-box-label">📍 Setting</div><textarea class="go-textarea" rows="3" placeholder="Where and when does the story take place?"></textarea></div>
+        </div>
+        <div class="go-box"><div class="go-box-label">⚡ Problem / Conflict</div><textarea class="go-textarea" rows="2" placeholder="What is the main problem or conflict in the story?"></textarea></div>
+        <div class="go-row" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="go-box"><div class="go-box-label">📌 Event 1</div><textarea class="go-textarea" rows="2" placeholder="First key event..."></textarea></div>
+          <div class="go-box"><div class="go-box-label">📌 Event 2</div><textarea class="go-textarea" rows="2" placeholder="Second key event..."></textarea></div>
+          <div class="go-box"><div class="go-box-label">📌 Event 3</div><textarea class="go-textarea" rows="2" placeholder="Third key event..."></textarea></div>
+        </div>
+        <div class="go-box go-resolution"><div class="go-box-label">✅ Resolution</div><textarea class="go-textarea" rows="2" placeholder="How is the problem solved? How does the story end?"></textarea></div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#888780;">Responses stay on this page — use Print (Ctrl+P) to save a copy.</div>
+    </div>
+  </div>
+  <div class="tip"><strong>Prompt:</strong> "Build a fillable story elements graphic organizer for Grade 4 ELA. Include fields for title, characters, setting, conflict, three key events, and resolution."</div>
+</div>
+
+<div class="slide" id="s11">
+  <div class="slide-label">Slide 12 of 16</div>
+  <div class="slide-title">What else can Claude build?</div>
+  <div class="slide-sub">Every item below can be generated from a single prompt as a self-contained HTML artifact. <strong>★ starred items</strong> go beyond what Mindsmith offers natively.</div>
+  <div class="cat-section">
+    <div class="cat-header"><span class="cat-icon">🎯</span><span class="cat-title">Practice & Assessment</span></div>
+    <div class="cat-items">
+      <div class="cat-item">Multiple choice</div>
+      <div class="cat-item">True / false</div>
+      <div class="cat-item">Fill in the blank</div>
+      <div class="cat-item">Matching</div>
+      <div class="cat-item hi">Error analysis</div>
+      <div class="cat-item hi">Slider-based questions</div>
+      <div class="cat-item hi">Hot spot / click-on-image</div>
+      <div class="cat-item hi">Self-reflection checklist</div>
+      <div class="cat-item hi">Step-by-step worked example</div>
+    </div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header"><span class="cat-icon">🎮</span><span class="cat-title">Games & Engagement</span></div>
+    <div class="cat-items">
+      <div class="cat-item hi">Jeopardy-style quiz board</div>
+      <div class="cat-item hi">Crossword puzzle</div>
+      <div class="cat-item hi">Word search</div>
+      <div class="cat-item hi">Spin the wheel</div>
+      <div class="cat-item hi">Timer-based challenge</div>
+      <div class="cat-item hi">Progress-tracked quest</div>
+    </div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header"><span class="cat-icon">📚</span><span class="cat-title">Reference & Exploration</span></div>
+    <div class="cat-items">
+      <div class="cat-item">Flashcards</div>
+      <div class="cat-item hi">Accordion / expandable sections</div>
+      <div class="cat-item hi">Tabbed content organizer</div>
+      <div class="cat-item hi">Annotated diagram viewer</div>
+      <div class="cat-item hi">Interactive timeline</div>
+      <div class="cat-item hi">Searchable glossary</div>
+    </div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header"><span class="cat-icon">✏️</span><span class="cat-title">Writing & Thinking Tools</span></div>
+    <div class="cat-items">
+      <div class="cat-item hi">Graphic organizer</div>
+      <div class="cat-item hi">Sentence frames with dropdowns</div>
+      <div class="cat-item hi">Branching scenario</div>
+      <div class="cat-item hi">Drag-and-drop sorting</div>
+      <div class="cat-item hi">Sorting & ranking</div>
+    </div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header"><span class="cat-icon">🔢</span><span class="cat-title">Math Simulations & Visuals</span></div>
+    <div class="cat-items">
+      <div class="cat-item hi">Word problem with visual model</div>
+      <div class="cat-item hi">Number line / fraction bar</div>
+      <div class="cat-item hi">Place value chart</div>
+      <div class="cat-item hi">Probability simulator</div>
+    </div>
+  </div>
+  <div class="cat-legend"><span style="color:#534AB7;font-size:12px;">★</span> Not available natively in Mindsmith</div>
+</div>
+
+<div class="slide" id="s12">
+  <div class="slide-label">Slide 13 of 16 · Integration</div>
+  <div class="slide-title">Adding an artifact to Mindsmith</div>
+  <div class="slide-sub">Claude generates the activity. Mindsmith's embed tile does the rest.</div>
+  <ul class="step-list">
+    <li><div class="step-num">1</div><div><div class="step-txt">Ask Claude to build the activity</div><div class="step-sub">Describe what you need — topic, grade level, activity type. Claude generates it as a live artifact in the conversation.</div></div></li>
+    <li><div class="step-num">2</div><div><div class="step-txt">Copy the HTML from the artifact panel</div><div class="step-sub">Click the download or copy icon at the top of the artifact panel in Claude. The activity is a self-contained HTML file.</div></div></li>
+    <li><div class="step-num">3</div><div><div class="step-txt">Add an embed tile to your Mindsmith lesson</div><div class="step-sub">This is the same embed tile used for web components and YouTube videos.</div></div></li>
+    <li><div class="step-num">4</div><div><div class="step-txt">Paste the HTML into the embed tile</div><div class="step-sub">The activity renders live inside the lesson — no external link, no separate tab.</div></div></li>
+  </ul>
+</div>
+
+<div class="slide" id="s13">
+  <div class="slide-label">Slide 14 of 16 · Integration</div>
+  <div class="slide-title">Adding an artifact to Brightspot</div>
+  <div class="slide-sub">The process is the same — the only variable is whether your Brightspot instance supports HTML embeds.</div>
+  <ul class="step-list">
+    <li><div class="step-num">1</div><div><div class="step-txt">Ask Claude to build the activity</div><div class="step-sub">Same as Mindsmith — describe your needs and Claude generates the artifact.</div></div></li>
+    <li><div class="step-num">2</div><div><div class="step-txt">Copy the HTML from the artifact panel</div><div class="step-sub">Click the download or copy icon at the top of the artifact panel in Claude.</div></div></li>
+    <li><div class="step-num">3</div><div><div class="step-txt">Look for an HTML or code block in the Brightspot content editor</div><div class="step-sub">If you don't see one, check with your CMS admin — whether HTML embeds are enabled depends on how your instance is configured.</div></div></li>
+    <li><div class="step-num">4</div><div><div class="step-txt">Paste the HTML into that block</div><div class="step-sub">The activity renders as part of the course page.</div></div></li>
+  </ul>
+</div>
+
+<div class="slide" id="s14">
+  <div class="slide-label">Slide 15 of 16 · Assessment</div>
+  <div class="slide-title">Formative vs. graded assessments</div>
+  <div class="slide-sub">Out of the box, Claude's artifacts give learners immediate feedback but don't report scores anywhere. Which approach you need depends on how the activity is being used.</div>
+  <div class="assess-grid">
+    <div class="assess-card formative"><div class="assess-card-title">✓ &nbsp;Formative — no score capture needed</div><div class="assess-card-body">Used for practice and self-check. Learners see their own feedback in the moment. No score is sent to a gradebook or LMS. Works as-is in Mindsmith or Brightspot — nothing extra required.</div></div>
+    <div class="assess-card graded"><div class="assess-card-title">📊 &nbsp;Graded — score capture required</div><div class="assess-card-body">To report scores to an LMS gradebook, the activity needs to be delivered as a SCORM package — a standard format that LMS platforms like Canvas or TalentLMS already understand. See the next slide for how Claude helps with this.</div></div>
+  </div>
+  <div class="tip"><strong>For most practice and engagement use cases,</strong> paste Claude's HTML straight into Mindsmith or Brightspot and you're done. SCORM is only needed when scores need to flow into a gradebook.</div>
+</div>
+
+<div class="slide" id="s15">
+  <div class="slide-label">Slide 16 of 16 · Assessment</div>
+  <div class="slide-title">Claude and SCORM packages</div>
+  <div class="slide-sub">SCORM is the standard format LMS platforms use to receive and record scores. Claude can generate everything needed to build one.</div>
+  <div class="scorm-can">
+    <div class="scorm-card"><div class="scorm-card-icon" style="color:#1D9E75;">📄</div><div class="scorm-card-title">The activity HTML</div><div class="scorm-card-body">The interactive quiz or activity itself — the same artifact you've seen in this presentation.</div></div>
+    <div class="scorm-card"><div class="scorm-card-icon" style="color:#534AB7;">⚙️</div><div class="scorm-card-title">The SCORM connector</div><div class="scorm-card-body">JavaScript that captures the learner's score and passes it to the LMS when the activity is submitted.</div></div>
+    <div class="scorm-card"><div class="scorm-card-icon" style="color:#D85A30;">📋</div><div class="scorm-card-title">The manifest file</div><div class="scorm-card-body">An XML file that tells the LMS what's in the package and how to launch it.</div></div>
+  </div>
+  <div class="caveat-box"><strong>The one step Claude can't do:</strong> A SCORM package is uploaded to an LMS as a .zip file. Claude generates all the files and tells you exactly how to organize and zip them — but the zipping and uploading is a manual step. It takes about two minutes once the files are ready. Testing also requires uploading to an actual LMS; SCORM Cloud offers a free tier specifically for this.</div>
+  <div class="tip"><strong>Bottom line:</strong> Claude does the heavy lifting on the content and the code. You zip the files and upload. No developer required for a straightforward single-activity package.</div>
+</div>
+
+<div class="nav">
+  <div class="dots" id="dots"></div>
+  <div class="nav-btns">
+    <span class="slide-counter" id="slide-counter">1 / 16</span>
+    <button class="nbtn" id="prev-btn" onclick="changeSlide(-1)" disabled>← Prev</button>
+    <button class="nbtn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+  </div>
+</div>
+</div>
+
+<div class="j-modal" id="j-modal">
+  <div class="j-modal-inner">
+    <div class="j-modal-cat" id="j-modal-cat"></div>
+    <div class="j-modal-pts" id="j-modal-pts"></div>
+    <div class="j-modal-q" id="j-modal-q"></div>
+    <div class="j-modal-choices" id="j-modal-choices"></div>
+    <div class="j-modal-fb" id="j-modal-fb"></div>
+    <button class="j-close-btn" id="j-close-btn" onclick="jClose()" style="display:none;">Close</button>
+  </div>
+</div>
+
+<script>
+/* SPACEBAR FIX — stop keydown propagating from textarea/input to slide nav */
+document.addEventListener('keydown', function(e) {
+  var tag = document.activeElement ? document.activeElement.tagName : '';
+  if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') {
+    e.stopPropagation();
+  }
+}, true);
+
+/* NAV */
+var cur=0,total=16;
+var dotsEl=document.getElementById('dots');
+for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.setAttribute('data-i',i);d.onclick=function(){goTo(parseInt(this.getAttribute('data-i')));};dotsEl.appendChild(d);}
+function goTo(n){document.getElementById('s'+cur).classList.remove('active');document.querySelectorAll('.dot')[cur].classList.remove('on');cur=n;document.getElementById('s'+cur).classList.add('active');document.querySelectorAll('.dot')[cur].classList.add('on');document.getElementById('prev-btn').disabled=(cur===0);document.getElementById('next-btn').disabled=(cur===total-1);document.getElementById('slide-counter').textContent=(cur+1)+' / '+total;}
+function changeSlide(dir){var n=cur+dir;if(n>=0&&n<total)goTo(n);}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);if(e.key==='ArrowLeft')changeSlide(-1);});
+
+/* DRAG AND DROP */
+var ddData=[{correctZone:0,text:'Floods destroyed the crops, so food prices rose sharply.'},{correctZone:1,text:'Unlike rivers, lakes do not flow to the ocean.'},{correctZone:2,text:'First, water evaporates. Next, it forms clouds. Finally, it falls as rain.'},{correctZone:3,text:'The town had no clean water, so engineers built a filtration plant.'}];
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function shuffleDisplaced(arr){var s,tries=0;do{s=shuffle(arr);tries++;}while(tries<30&&s.some(function(item,i){return item.correctZone===i;}));return s;}
+var ddShuffled=shuffleDisplaced(ddData),ddDragging=null;
+var ddContainer=document.getElementById('dd-items');
+ddShuffled.forEach(function(item,idx){var div=document.createElement('div');div.className='dd-item';div.draggable=true;div.id='ddi'+idx;div.setAttribute('data-correct',item.correctZone);div.textContent=item.text;div.addEventListener('dragstart',function(e){ddDragging=div.id;e.dataTransfer.effectAllowed='move';});ddContainer.appendChild(div);});
+function ddOver(e){e.preventDefault();e.currentTarget.classList.add('over');}
+document.addEventListener('dragenter',function(e){document.querySelectorAll('.dd-zone').forEach(function(z){if(!z.contains(e.target))z.classList.remove('over');});});
+function ddDrop(e,zoneIdx){e.preventDefault();e.currentTarget.classList.remove('over');if(!ddDragging)return;var item=document.getElementById(ddDragging);if(!item)return;item.classList.add('placed');item.setAttribute('draggable','false');var placed=document.createElement('div');placed.className='dd-placed';placed.textContent=item.textContent;placed.setAttribute('data-correct',item.getAttribute('data-correct'));placed.setAttribute('data-zone',zoneIdx);e.currentTarget.appendChild(placed);ddDragging=null;}
+function ddCheck(){var placed=document.querySelectorAll('.dd-placed');var correct=0;placed.forEach(function(p){if(parseInt(p.getAttribute('data-correct'))===parseInt(p.getAttribute('data-zone'))){p.classList.add('correct');correct++;}else p.classList.add('wrong');});var fb=document.getElementById('dd-fb');fb.className='fb show '+(correct===4?'good':'bad');fb.textContent=correct===4?'All four correct! You can identify cause & effect, compare & contrast, sequence, and problem & solution structures.':correct+' of 4 correct. Signal words help: "because/so" = cause & effect; "unlike/both" = compare & contrast; "first/next/finally" = sequence; "problem/solution" = problem & solution.';}
+
+/* BRANCHING */
+var branchNodes={start:{text:'You need to write about a dog finding a lost child in the park. Before you begin, you choose your narrator.',choices:[{label:"Tell it from the dog's point of view",next:'dog'},{label:"Tell it from the child's point of view",next:'child'},{label:'Tell it from an outside narrator who sees everything',next:'third'}]},dog:{text:"You write: \"I sniffed the air and caught a strange scent — not my owner, not a squirrel. A small human, trembling behind the oak tree.\"\n\nThe reader experiences everything through the dog's senses and thoughts.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]},child:{text:"You write: \"I heard something rustling in the leaves. My heart pounded. Then a wet nose pressed against my hand and I stopped crying.\"\n\nThe reader feels the child's fear and relief directly.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]},third:{text:"You write: \"The golden retriever paused, ears raised. Forty feet away, behind a gnarled oak, a six-year-old sat with her knees pulled to her chest.\"\n\nThe narrator sees both characters at once — neither perspective is hidden.",outcome:true,choices:[{label:'Try another perspective',next:'start'}]}};
+function renderBranch(nodeId){var node=branchNodes[nodeId];var inner=document.getElementById('branch-inner');var html='<div class="branch-text">'+node.text+'</div>';if(node.outcome)html+='<div class="branch-outcome"><strong style="font-weight:500;">Point of view identified:</strong> Notice how the same scene reads completely differently depending on who is narrating.</div>';node.choices.forEach(function(c){html+='<button class="branch-choice" onclick="renderBranch(\''+c.next+'\')">'+c.label+'</button>';});inner.innerHTML=html;}
+renderBranch('start');
+
+/* WORD PROBLEM */
+function fracEqual(n1,d1,n2,d2){return parseInt(n1)*parseInt(d2)===parseInt(n2)*parseInt(d1);}
+function wpCheck(){var n=document.getElementById('wp-n').value.trim(),d=document.getElementById('wp-d').value.trim();var ok=n&&d&&fracEqual(n,d,'1','12');document.getElementById('wp-n').className='frac-input '+(ok?'correct':'wrong');document.getElementById('wp-d').className='frac-input '+(ok?'correct':'wrong');var fb=document.getElementById('wp-fb');fb.className='fb show '+(ok?'good':'bad');fb.textContent=ok?"Correct! 1/3 divided by 4 = 1/12. The bar model shows Maya's third split into 4 equal pieces — each is 1/12 of the whole.":'Not quite. If 1/3 is split into 4 equal pieces, each piece = 1/(3x4) = 1/12 of the whole pizza.';}
+
+/* ERROR ANALYSIS */
+var eaSelected=null,eaSubmitted=false;
+function eaSelect(n){if(eaSubmitted)return;eaSelected=n;[1,2,3].forEach(function(i){document.getElementById('ea-s'+i).className='ea-step'+(i===n?' selected':'');});document.getElementById('ea-selected-label').textContent='Step '+n;document.getElementById('ea-explanation').value='';document.getElementById('ea-hint').textContent='';document.getElementById('ea-fb').className='fb';document.getElementById('ea-explain').className='ea-explain show';document.getElementById('ea-explanation').focus();}
+function eaSubmit(){if(eaSubmitted)return;var exp=document.getElementById('ea-explanation').value.trim();var hint=document.getElementById('ea-hint');if(!exp){hint.textContent='Please type an explanation before submitting.';return;}if(exp.length<10){hint.textContent='Try to write a more complete explanation.';return;}var fb=document.getElementById('ea-fb');if(eaSelected===2){eaSubmitted=true;document.getElementById('ea-s2').className='ea-step correct-pick';document.getElementById('ea-s1').className='ea-step dimmed';document.getElementById('ea-s3').className='ea-step dimmed';fb.className='fb show good';fb.innerHTML='<strong>Correct!</strong> Step 2 has the error. 34 x 20 should be 680, not 640. To multiply by 20, first find 34 x 2 = 68, then append a zero: 680. The correct final answer is 204 + 680 = <strong>884</strong>.';document.getElementById('ea-explain').style.display='none';}else{var msg=eaSelected===1?'Step 1 is correct. 34 x 6 = 204: multiply 4 x 6 = 24 (write 4, carry 2), then 3 x 6 = 18 + 2 = 20. So 204 is right.':'Step 3 is correct given the numbers used. 204 + 640 = 844 is accurate — the error came from Step 2.';fb.className='fb show bad';fb.textContent='Not quite. '+msg+' Look again at Step 2.';setTimeout(function(){[1,2,3].forEach(function(i){document.getElementById('ea-s'+i).className='ea-step';});document.getElementById('ea-explain').className='ea-explain';document.getElementById('ea-fb').className='fb';eaSelected=null;},2800);}}
+
+/* JEOPARDY — all questions verified: one correct answer each */
+var jData=[
+  {cat:'Place Value',questions:[
+    {pts:100,q:'What is the value of the 4 in 3,492?',choices:['4','40','400','4,000'],correct:2,exp:'The 4 is in the hundreds place, so its value is 400.'},
+    {pts:200,q:'Which number has a 7 in the tens place?',choices:['701','170','7,100','107'],correct:1,exp:'170 has 7 in the tens place.'},
+    {pts:300,q:'What is 4,000 + 300 + 60 + 5 in standard form?',choices:['4,365','43,065','4,635','40,365'],correct:0,exp:'4,000 + 300 + 60 + 5 = 4,365.'},
+    {pts:400,q:'How many times greater is the 5 in 5,200 than the 5 in 250?',choices:['10 times','100 times','20 times','1,000 times'],correct:1,exp:'5,000 divided by 50 = 100. The 5 in 5,200 is 100 times greater.'}
+  ]},
+  {cat:'Fractions',questions:[
+    {pts:100,q:'Which fraction is equivalent to 1/2?',choices:['2/3','4/8','3/5','2/6'],correct:1,exp:'4/8 = 1/2 because 1x4=4 and 2x4=8.'},
+    {pts:200,q:'What is 3/4 + 1/4?',choices:['1/2','1 whole','2/3','3/8'],correct:1,exp:'3/4 + 1/4 = 4/4 = 1 whole.'},
+    {pts:300,q:'What is 2/3 of 12?',choices:['6','8','4','9'],correct:1,exp:'2/3 of 12: divide by 3 = 4, multiply by 2 = 8.'},
+    {pts:400,q:'Which fraction is greater than 3/4?',choices:['2/3','5/8','7/8','6/9'],correct:2,exp:'7/8 = 0.875, which is greater than 3/4 = 0.75.'}
+  ]},
+  {cat:'ELA',questions:[
+    {pts:100,q:'"The wind whispered through the trees" is an example of:',choices:['Simile','Hyperbole','Personification','Metaphor'],correct:2,exp:'Giving human qualities to a non-human thing is personification.'},
+    {pts:200,q:'What is the purpose of a topic sentence?',choices:['To end a paragraph','To introduce the main idea','To provide evidence','To give an example'],correct:1,exp:'A topic sentence introduces the main idea of the paragraph.'},
+    {pts:300,q:'Which word is a synonym for "enormous"?',choices:['Tiny','Gigantic','Average','Swift'],correct:1,exp:'Gigantic means very large — a synonym for enormous.'},
+    {pts:400,q:'In first-person point of view, the narrator uses:',choices:['He/She/They','You/Your','I/Me/My','One/Ones'],correct:2,exp:'First-person narrators use I, me, my — they are a character in the story.'}
+  ]},
+  {cat:'Geometry',questions:[
+    {pts:100,q:'How many sides does a hexagon have?',choices:['5','6','7','8'],correct:1,exp:'Hex means six — a hexagon has 6 sides.'},
+    {pts:200,q:'What is the area of a rectangle 5cm wide and 8cm long?',choices:['13 sq cm','26 sq cm','40 sq cm','45 sq cm'],correct:2,exp:'Area = length x width = 8 x 5 = 40 square centimeters.'},
+    {pts:300,q:'A triangle has angles of 90 and 45 degrees. What is the third angle?',choices:['45 degrees','90 degrees','135 degrees','60 degrees'],correct:0,exp:'180 - 90 - 45 = 45 degrees.'},
+    {pts:400,q:'What is the volume of a box 3cm x 4cm x 5cm?',choices:['12 cubic cm','47 cubic cm','60 cubic cm','20 cubic cm'],correct:2,exp:'Volume = l x w x h = 3 x 4 x 5 = 60 cubic centimeters.'}
+  ]}
+];
+var jScore=0,jCurrent=null;
+function buildJBoard(){var board=document.getElementById('j-board');board.innerHTML='';jData.forEach(function(cat){var h=document.createElement('div');h.className='j-cat';h.textContent=cat.cat;board.appendChild(h);});for(var row=0;row<4;row++){jData.forEach(function(cat,ci){var q=cat.questions[row];var cell=document.createElement('button');cell.className='j-cell';cell.textContent='$'+q.pts;cell.setAttribute('data-ci',ci);cell.setAttribute('data-row',row);cell.onclick=function(){jOpen(parseInt(this.getAttribute('data-ci')),parseInt(this.getAttribute('data-row')),this);};board.appendChild(cell);});}}
+function jOpen(ci,row,cell){var q=jData[ci].questions[row];jCurrent={ci:ci,row:row,cell:cell,pts:q.pts};document.getElementById('j-modal-cat').textContent=jData[ci].cat;document.getElementById('j-modal-pts').textContent='$'+q.pts;document.getElementById('j-modal-q').textContent=q.q;var choicesEl=document.getElementById('j-modal-choices');choicesEl.innerHTML='';q.choices.forEach(function(c,i){var btn=document.createElement('button');btn.className='j-modal-btn';btn.textContent=c;btn.onclick=function(){jAnswer(i,q.correct,q.exp,choicesEl);};choicesEl.appendChild(btn);});document.getElementById('j-modal-fb').className='j-modal-fb';document.getElementById('j-modal-fb').textContent='';document.getElementById('j-close-btn').style.display='none';document.getElementById('j-modal').className='j-modal open';}
+function jAnswer(chosen,correct,exp,choicesEl){var btns=choicesEl.querySelectorAll('.j-modal-btn');btns.forEach(function(b){b.disabled=true;});btns[chosen].className='j-modal-btn '+(chosen===correct?'correct':'wrong');btns[correct].className='j-modal-btn correct';var fb=document.getElementById('j-modal-fb');fb.className='j-modal-fb show '+(chosen===correct?'good':'bad');fb.textContent=(chosen===correct?'Correct! ':'Incorrect. ')+exp;if(chosen===correct){jScore+=jCurrent.pts;document.getElementById('j-score-val').textContent=jScore;}jCurrent.cell.className='j-cell answered';jCurrent.cell.textContent='answered';jCurrent.cell.disabled=true;document.getElementById('j-close-btn').style.display='inline-block';}
+function jClose(){document.getElementById('j-modal').className='j-modal';}
+buildJBoard();
+
+/* SENTENCE FRAMES */
+var sfAnswers=[{a:'zoo',b:'metaphor'},{a:'million',b:'hyperbole'},{a:'whispered',b:'personification'},{a:'idiom',b:'different'},{a:'sun',b:'simile'}];
+var sfFeedback=[
+  {good:'Correct! "The classroom was a zoo" is a metaphor — it directly compares two things without using "like" or "as."',bad:'Not quite. Think about what type of comparison says one thing IS another thing directly, without using "like" or "as."'},
+  {good:"Correct! \"A million times\" is an obvious exaggeration — that's hyperbole, used for dramatic effect.",bad:"Not quite. Think about which word makes the exaggeration extreme, and which figure of speech uses extreme exaggeration for effect."},
+  {good:"Correct! \"Whispered\" gives the wind a human ability — that's personification.",bad:"Not quite. Which word gives the wind a human quality? And what figure of speech gives human traits to non-human things?"},
+  {good:"Correct! An idiom is a phrase whose meaning is different from its literal words.",bad:"Not quite. Think about what makes an idiom special — its meaning is not the same as what the words literally say."},
+  {good:'Correct! "As bright as the sun" is a simile — it uses "as" to compare her smile to something.',bad:'Not quite. Which comparison word (like/as) is used here? That\'s the key to identifying this figure of speech.'}
+];
+var sfChecked=false;
+function sfCheck(){if(sfChecked)return;sfChecked=true;var score=0;for(var i=0;i<5;i++){var selA=document.getElementById('sf'+i+'a');var selB=document.getElementById('sf'+i+'b');var fb=document.getElementById('sf'+i+'-fb');var okA=selA.value===sfAnswers[i].a;var okB=selB.value===sfAnswers[i].b;var ok=okA&&okB;if(ok)score++;selA.className='sf-select '+(okA?'correct':'wrong');selB.className='sf-select '+(okB?'correct':'wrong');selA.disabled=true;selB.disabled=true;fb.className='sf-feedback show '+(ok?'good':'bad');fb.textContent=ok?sfFeedback[i].good:sfFeedback[i].bad;document.getElementById('sf'+i).className='sf-item '+(ok?'correct':'wrong');}var box=document.getElementById('sf-score-box');box.className='sf-score-box show';document.getElementById('sf-score-num').textContent=score+' / 5';var msgs=['Keep reviewing the figurative language types and try again!','Good start — review the ones you missed and look for the signal words.','Good work! Review any missed items to strengthen your understanding.','Great job! You have a strong grasp of figurative language.','Perfect! You correctly identified all five figures of speech.'];document.getElementById('sf-score-msg').textContent=msgs[score];}
+function sfReset(){sfChecked=false;for(var i=0;i<5;i++){document.getElementById('sf'+i+'a').value='';document.getElementById('sf'+i+'a').className='sf-select';document.getElementById('sf'+i+'a').disabled=false;document.getElementById('sf'+i+'b').value='';document.getElementById('sf'+i+'b').className='sf-select';document.getElementById('sf'+i+'b').disabled=false;document.getElementById('sf'+i+'-fb').className='sf-feedback';document.getElementById('sf'+i).className='sf-item';}document.getElementById('sf-score-box').className='sf-score-box';}
+</script>
+</body>
+</html>
